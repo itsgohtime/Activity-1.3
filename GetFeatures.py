@@ -76,12 +76,17 @@ def F3 (Data, period):
   sf_mean = sum(shape_factor)/len(shape_factor)
   return sf_mean
 
-def ComputeWithinModeFeatures(Data, period):
+def F4(Data, period):
+  knee_ang =  Data['Knee_Angle'][period[0]: period[1] + 1]
+  return max(knee_ang)
+
+def ComputeWithinModeFeature1(Data, period):
 
   #feature 1: knee_velocity mean
   f1= F1(Data, period)          #feature
   f2=F2(Data, period)           #feature
   f3=F3(Data, period)           #feature
+  # f4 =F4(Data, period)
   feature_vals=[f1,f2, f3]
     
     #Create holders to store names and values of features. Fill with mode info  
@@ -95,12 +100,44 @@ def ComputeWithinModeFeatures(Data, period):
   Features=pd.DataFrame(data=np.array([FeatureValues]),columns=FeatureNames)
   return Features
 
+def ComputeWithinModeFeature2(Data, period):
+
+  #feature 1: knee_velocity mean
+  f1= F1(Data, period)          #feature
+  f2=F2(Data, period)           #feature
+  f3=F3(Data, period)           #feature
+  f4 =F4(Data, period)
+  feature_vals=[f1,f2, f3, f4]
+    
+    #Create holders to store names and values of features. Fill with mode info  
+  FeatureNames=['Mode', "knee_velocity_mean", "knee_velocity_psd", 
+  "knee_velocity_shape_factor", "knee_angle_max"]
+  FeatureValues=np.array([[period[2]]])
+    
+  #iterate through series, creating features for each
+  #return feature_vals
+  FeatureValues=np.append(FeatureValues,feature_vals)
+  
+  Features=pd.DataFrame(data=np.array([FeatureValues]),columns=FeatureNames)
+  return Features
+
 # Finds the feature for each period for each file and makes it into a database
-def FindFeatures(FileNames):
+def FindFeatures1(FileNames):
   Features = pd.DataFrame()
   for File in FileNames:
       Data, periods = Find_Segments(File)
       for i in periods:
-        New_Features = ComputeWithinModeFeatures(Data, i)
+        New_Features = ComputeWithinModeFeature1(Data, i)
         Features=pd.concat([Features, New_Features],ignore_index=True)
   return Features
+
+# Finds the feature for each period for each file and makes it into a database
+def FindFeatures2(FileNames):
+  Features = pd.DataFrame()
+  for File in FileNames:
+      Data, periods = Find_Segments(File)
+      for i in periods:
+        New_Features = ComputeWithinModeFeature2(Data, i)
+        Features=pd.concat([Features, New_Features],ignore_index=True)
+  return Features
+  
